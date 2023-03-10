@@ -1,9 +1,12 @@
-﻿using MagicPlaces_API.Data;
+﻿using AutoMapper;
+using MagicPlaces_API.Data;
 using MagicPlaces_API.Models;
 using MagicPlaces_API.Models.DTO;
+using MagicPlaces_API.Repository.IRepository;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace MagicPlaces_API.Controllers
 {
@@ -11,136 +14,191 @@ namespace MagicPlaces_API.Controllers
     //[ApiController]
     public class PlacesAPIController : ControllerBase
     {
-        private readonly ILogger<PlacesAPIController> logger;
+        private readonly APIResponse _response;
+        private readonly IPlacesRepository _dbPlaces;
+        private readonly ILogger<PlacesAPIController> _logger;
+        private readonly IMapper _mapper;
 
-        public PlacesAPIController(ILogger<PlacesAPIController> _logger)
+        public PlacesAPIController(ILogger<PlacesAPIController> logger, IPlacesRepository db, IMapper mapper)
         {
-            logger = _logger;
+            _dbPlaces = db;
+            _logger = logger;
+            _mapper = mapper;
+            this._response = new APIResponse();
         }
 
 
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult<IEnumerable<PlacesDTO>> GetPlaces()
+        public async Task<ActionResult<APIResponse>> GetPlaces()
         {
-            logger.LogInformation("Realizando busca dos lugares cadastrados!");
-            return Ok(PlaceStore.PlacesList);
+            try
+            {
+
+                IEnumerable<Places> placesList = await _dbPlaces.GetAllAsync();
+                _response.Result = _mapper.Map<List<PlacesDTO>>(placesList);
+                _response.StatusCode = System.Net.HttpStatusCode.OK;
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.ErrorMessages = new List<string>() { ex.Message };
+
+            }
+            return _response;
         }
 
         [HttpGet("{id:int}", Name = "GetPlace")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public ActionResult<PlacesDTO> GetPlaces(int id)
+        public async Task<ActionResult<APIResponse>> GetPlaces(int id)
         {
-            if (id == 0)
+            try
             {
-                logger.LogInformation("O parâmetro de Id do local não foi passado corretamente.");
-                return BadRequest();
-            }
-            var place = PlaceStore.PlacesList.FirstOrDefault(place => place.Id == id);
 
-            if (place == null)
-            {
-                logger.LogInformation($"O local com esse Id {id} não foi encontrado.");
-                return NotFound();
+                if (id == 0)
+                {
+                    _response.StatusCode = System.Net.HttpStatusCode.BadRequest;
+                    _response.ErrorMessages = new List<string>
+                    {
+                        "O parâmetro de Id do local não foi passado corretamente."
+                    };
+                    return BadRequest(_response);
+                }
+                var place = await _dbPlaces.GetAsync(place => place.Id == id);
+
+                if (place == null)
+                {
+                    _response.StatusCode = System.Net.HttpStatusCode.NotFound;
+                    _response.ErrorMessages = new List<string>
+                    {
+                        $"O local com esse Id {id} não foi encontrado."
+                    };
+                    return NotFound(_response);
+                }
+                _response.Result = _mapper.Map<List<PlacesDTO>>(place);
+                _response.StatusCode = System.Net.HttpStatusCode.OK;
+                return Ok(_response);
             }
-            logger.LogInformation($"Local encontrado pelo Id {id}");
-            return Ok(place);
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.ErrorMessages = new List<string>() { ex.Message };
+
+            }
+            return _response;
         }
 
         [HttpPost]
+        [Route("AdicionarPlace")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public ActionResult<PlacesDTO> CreatePlace([FromBody] PlacesDTO placesDto)
+        public async Task<ActionResult<APIResponse>> CreatePlace([FromBody] PlacesCreateDTO placesDto)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest(ModelState);
-            }
-            if(placesDto == null)
-            {
-                return BadRequest(placesDto);
-            }
-            if(placesDto.Id != 0)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError);
-            }
-            if(PlaceStore.PlacesList.Any(place => place.Name == placesDto.Name))
-            {
-                ModelState.AddModelError("Erro:", "Este local já foi registrado!");
-                return BadRequest(ModelState);
-            }
-            placesDto.Id = PlaceStore.PlacesList.OrderByDescending(l => l.Id).FirstOrDefault().Id + 1;
-            PlaceStore.PlacesList.Add(placesDto);
 
-            logger.LogInformation("Novo local adicionado.");
-            return CreatedAtRoute("GetPlace", new {id = placesDto.Id}, placesDto);
+                if (!ModelState.IsValid)
+                {
+                    _response.StatusCode = System.Net.HttpStatusCode.BadRequest;
+                    _response.ErrorMessages = new List<string> { ModelState.ToList().ToString() };
+                    return BadRequest(ModelState);
+                }
+                if (placesDto == null)
+                {
+                    _response.StatusCode = System.Net.HttpStatusCode.BadRequest;
+                    return BadRequest(_response);
+                }
+                if (await _dbPlaces.GetAsync(place => place.Name.ToLower() == placesDto.Name.ToLower()) != null)
+                {
+                    var mensagem = "Este local já foi registrado!";
+                    ModelState.AddModelError("Erro:", mensagem);
+                    return BadRequest(ModelState);
+                }
+                var places = _mapper.Map<Places>(placesDto);
+
+                await _dbPlaces.CreateAsync(places);
+
+                _logger.LogInformation("Novo local adicionado.");
+
+                _response.Result = _mapper.Map<List<PlacesDTO>>(places);
+                _response.StatusCode = System.Net.HttpStatusCode.Created;
+                return CreatedAtRoute("GetPlace", new { id = places.Id }, _response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.ErrorMessages = new List<string>() { ex.Message };
+            }
+            return _response;
         }
 
         [HttpDelete]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public IActionResult DeletePlace(int id)
+        public async Task<ActionResult<APIResponse>> DeletePlace(int id)
         {
-            if(id == 0)
+            try
             {
-                return BadRequest();
-            }
-            var place = PlaceStore.PlacesList.FirstOrDefault(place => place.Id == id);
+                if (id == 0)
+                {
+                    _response.StatusCode = System.Net.HttpStatusCode.BadRequest;
+                    return BadRequest(_response);
+                }
+                var place = await _dbPlaces.GetAsync(place => place.Id == id);
 
-            if(place == null)
-            {
-                return NotFound();
+                if (place == null)
+                {
+                    _response.StatusCode = System.Net.HttpStatusCode.NotFound;
+                    return NotFound(_response);
+                }
+                await _dbPlaces.RemoveAsync(place);
+                _logger.LogInformation($"Local de id {id} foi removido.");
+                _response.StatusCode = System.Net.HttpStatusCode.NoContent;
+                _response.IsSuccess = true;
+                return Ok(_response);
             }
-            PlaceStore.PlacesList.Remove(place);
-            logger.LogInformation($"Local de id {id} foi removido.");
-            return NoContent();
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.ErrorMessages = new List<string>() { ex.Message };
+            }
+            return _response;
         }
 
         [HttpPut]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public IActionResult UpdatePlace(int id, [FromBody] PlacesDTO placeDto)
+        public async Task<ActionResult<APIResponse>> UpdatePlace(int id, [FromBody] PlacesUpdateDTO placesDto)
         {
-            if(placeDto == null || id != placeDto.Id)
+            try
             {
-                return BadRequest();
+                if (placesDto == null || id != placesDto.Id)
+                {
+                    _response.StatusCode = System.Net.HttpStatusCode.BadRequest;
+                    return BadRequest(_response);
+                }
+
+                var places = _mapper.Map<Places>(placesDto);
+
+
+                await _dbPlaces.UpdateAsync(places);
+
+                _logger.LogInformation($"Local de id {id} foi atualizado.");
+                _response.StatusCode = System.Net.HttpStatusCode.NoContent;
+                _response.IsSuccess = true;
+                return Ok(_response);
             }
-
-            var place = PlaceStore.PlacesList.FirstOrDefault(place => place.Id == id);
-            place.Name = placeDto.Name;
-            place.Value = placeDto.Value;
-            place.Comment = placeDto.Comment;
-
-            logger.LogInformation($"Local de id {id} foi atualizado.");
-            return NoContent();
-        }
-
-        [HttpPatch("{id:int}", Name = "UpdatePlace")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public IActionResult UpdatePlace(int id, JsonPatchDocument<PlacesDTO> objDto)
-        {
-            if(objDto == null || id == 0)
+            catch (Exception ex)
             {
-                return BadRequest();
+                _response.IsSuccess = false;
+                _response.ErrorMessages = new List<string>() { ex.Message };
             }
-            var place = PlaceStore.PlacesList.FirstOrDefault(place => place.Id == id);
-            if(place == null)
-            {
-                return BadRequest();
-            }
-            objDto.ApplyTo(place, ModelState);
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            logger.LogInformation($"Local com id {id} teve um campo atualizado.");
-            return NoContent();
+            return _response;
         }
 
     }
