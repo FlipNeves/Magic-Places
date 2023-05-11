@@ -12,6 +12,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(option =>
     option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultSQLConnection"));
 });
 builder.Services.AddScoped<IPlacesRepository, PlacesRepository>();
+builder.Services.AddScoped<IPlacesNumbersRepository, PlacesNumbersRepository>();
 builder.Services.AddAutoMapper(typeof(AutoMapperConfig));
 
 builder.Services.AddControllers(options =>

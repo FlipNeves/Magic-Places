@@ -11,6 +11,9 @@ namespace MagicPlaces_API
             CreateMap<Places, PlacesDTO>().ReverseMap();
             CreateMap<Places, PlacesCreateDTO>().ReverseMap();  
             CreateMap<Places, PlacesUpdateDTO>().ReverseMap();
+            CreateMap<PlacesNumber, PlacesNumberDTO>().ReverseMap();
+            CreateMap<PlacesNumber, PlaceNumberCreateDTO>().ReverseMap();  
+            CreateMap<PlacesNumber, PlaceNumberUpdateDTO>().ReverseMap();
         }
     }
 }

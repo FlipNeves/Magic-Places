@@ -11,6 +11,7 @@ namespace MagicPlaces_API.Data
 
         }
         public DbSet<Places> Places { get; set; }
+        public DbSet<PlacesNumber> PlacesNumbers { get; set; }  
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
