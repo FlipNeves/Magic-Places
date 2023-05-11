@@ -1,13 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
-namespace MagicPlaces_API.Models
+namespace MagicPlaces_API.Models.DTO
 {
-    public class Places
+    public class PlacesCreateDTO
     {
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id { get; set; }
         [Required]
         public string Name { get; set; }
         public string Details { get; set; }
@@ -17,6 +13,5 @@ namespace MagicPlaces_API.Models
         public string Comment { get; set; }
         [Required]
         public DateTime CreatedDate { get; set; }
-
     }
 }

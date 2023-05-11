@@ -10,32 +10,34 @@ using Microsoft.EntityFrameworkCore;
 
 namespace MagicPlaces_API.Controllers
 {
-    [Route("/Places")]
+    [Route("/PlacesNumbers")]
     //[ApiController]
-    public class PlacesAPIController : ControllerBase
+    public class PlacesNumbersAPIController : ControllerBase
     {
         private readonly APIResponse _response;
+        private readonly IPlacesNumbersRepository _dbPlacesNumber;
         private readonly IPlacesRepository _dbPlaces;
-        private readonly ILogger<PlacesAPIController> _logger;
+        private readonly ILogger<PlacesNumbersAPIController> _logger;
         private readonly IMapper _mapper;
 
-        public PlacesAPIController(ILogger<PlacesAPIController> logger, IPlacesRepository db, IMapper mapper)
+        public PlacesNumbersAPIController(ILogger<PlacesNumbersAPIController> logger, IPlacesNumbersRepository db, IMapper mapper, IPlacesRepository dbPlaces)
         {
-            _dbPlaces = db;
+            _dbPlacesNumber = db;
             _logger = logger;
             _mapper = mapper;
             this._response = new APIResponse();
+            _dbPlaces = dbPlaces;
         }
 
 
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<APIResponse>> GetPlaces()
+        public async Task<ActionResult<APIResponse>> GetPlacesNumber()
         {
             try
             {
-                IEnumerable<Places> placesList = await _dbPlaces.GetAllAsync();
-                _response.Result = _mapper.Map<List<PlacesDTO>>(placesList);
+                IEnumerable<PlacesNumber> placesNumberList = await _dbPlacesNumber.GetAllAsync();
+                _response.Result = _mapper.Map<List<PlacesNumberDTO>>(placesNumberList);
                 _response.StatusCode = System.Net.HttpStatusCode.OK;
                 return Ok(_response);
             }
@@ -48,11 +50,11 @@ namespace MagicPlaces_API.Controllers
             return _response;
         }
 
-        [HttpGet("{id:int}", Name = "GetPlace")]
+        [HttpGet("{id:int}", Name = "GetPlaceNumber")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<APIResponse>> GetPlaces(int id)
+        public async Task<ActionResult<APIResponse>> GetPlacesNumber(int id)
         {
             try
             {
@@ -62,22 +64,22 @@ namespace MagicPlaces_API.Controllers
                     _response.StatusCode = System.Net.HttpStatusCode.BadRequest;
                     _response.ErrorMessages = new List<string>
                     {
-                        "O parâmetro de Id do local não foi passado corretamente."
+                        "O parâmetro de Id do local Number não foi passado corretamente."
                     };
                     return BadRequest(_response);
                 }
-                var place = await _dbPlaces.GetAsync(place => place.Id == id);
+                var placeNumber = await _dbPlacesNumber.GetAsync(number => number.PlaceNo == id);
 
-                if (place == null)
+                if (placeNumber == null)
                 {
                     _response.StatusCode = System.Net.HttpStatusCode.NotFound;
                     _response.ErrorMessages = new List<string>
                     {
-                        $"O local com esse Id {id} não foi encontrado."
+                        $"O local Number com esse Id {id} não foi encontrado."
                     };
                     return NotFound(_response);
                 }
-                _response.Result = _mapper.Map<PlacesDTO>(place);
+                _response.Result = _mapper.Map<PlacesNumberDTO>(placeNumber);
                 _response.StatusCode = System.Net.HttpStatusCode.OK;
                 return Ok(_response);
             }
@@ -91,11 +93,11 @@ namespace MagicPlaces_API.Controllers
         }
 
         [HttpPost]
-        [Route("AdicionarPlace")]
+        [Route("AdicionarPlaceNumber")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<APIResponse>> CreatePlace([FromBody] PlacesCreateDTO placesDto)
+        public async Task<ActionResult<APIResponse>> CreatePlaceNumber([FromBody] PlaceNumberCreateDTO placesNumberDto)
         {
             try
             {
@@ -106,26 +108,32 @@ namespace MagicPlaces_API.Controllers
                     _response.ErrorMessages = new List<string> { ModelState.ToList().ToString() };
                     return BadRequest(ModelState);
                 }
-                if (placesDto == null)
+                if (placesNumberDto == null)
                 {
                     _response.StatusCode = System.Net.HttpStatusCode.BadRequest;
                     return BadRequest(_response);
                 }
-                if (await _dbPlaces.GetAsync(place => place.Name.ToLower() == placesDto.Name.ToLower()) != null)
+                if (await _dbPlaces.GetAsync(x => x.Id == placesNumberDto.PlaceId) == null)
                 {
-                    var mensagem = "Este local já foi registrado!";
+                    ModelState.AddModelError("CustomError", "PlaceID inválido");
+                    return BadRequest(_response);
+                }
+
+                if (await _dbPlacesNumber.GetAsync(placeNo => placeNo.PlaceNo == placesNumberDto.PlaceNo) != null)
+                {
+                    var mensagem = "Este local Number já foi registrado!";
                     ModelState.AddModelError("Erro:", mensagem);
                     return BadRequest(ModelState);
                 }
-                var places = _mapper.Map<Places>(placesDto);
+                var placesNumber = _mapper.Map<PlacesNumber>(placesNumberDto);
 
-                await _dbPlaces.CreateAsync(places);
+                await _dbPlacesNumber.CreateAsync(placesNumber);
 
-                _logger.LogInformation("Novo local adicionado.");
+                _logger.LogInformation("Novo local Number adicionado.");
 
-                _response.Result = _mapper.Map<PlacesDTO>(places);
+                _response.Result = _mapper.Map<PlacesNumberDTO>(placesNumber);
                 _response.StatusCode = System.Net.HttpStatusCode.Created;
-                return CreatedAtRoute("GetPlace", new { id = places.Id }, _response);
+                return CreatedAtRoute("GetPlaceNumber", new { id = placesNumber.PlaceNo }, _response);
             }
             catch (Exception ex)
             {
@@ -136,10 +144,10 @@ namespace MagicPlaces_API.Controllers
         }
 
         [HttpDelete]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<APIResponse>> DeletePlace(int id)
+        public async Task<ActionResult<APIResponse>> DeletePlaceNumber(int id)
         {
             try
             {
@@ -148,15 +156,15 @@ namespace MagicPlaces_API.Controllers
                     _response.StatusCode = System.Net.HttpStatusCode.BadRequest;
                     return BadRequest(_response);
                 }
-                var place = await _dbPlaces.GetAsync(place => place.Id == id);
+                var placeNumber = await _dbPlacesNumber.GetAsync(placeNo => placeNo.PlaceNo == id);
 
-                if (place == null)
+                if (placeNumber == null)
                 {
                     _response.StatusCode = System.Net.HttpStatusCode.NotFound;
                     return NotFound(_response);
                 }
-                await _dbPlaces.RemoveAsync(place);
-                _logger.LogInformation($"Local de id {id} foi removido.");
+                await _dbPlacesNumber.RemoveAsync(placeNumber);
+                _logger.LogInformation($"Local Number de id {id} foi removido.");
                 _response.StatusCode = System.Net.HttpStatusCode.NoContent;
                 _response.IsSuccess = true;
                 return Ok(_response);
@@ -170,24 +178,30 @@ namespace MagicPlaces_API.Controllers
         }
 
         [HttpPut]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<APIResponse>> UpdatePlace(int id, [FromBody] PlacesUpdateDTO placesDto)
+        public async Task<ActionResult<APIResponse>> UpdatePlaceNumber(int id, [FromBody] PlaceNumberUpdateDTO placeNumberDto)
         {
             try
             {
-                if (placesDto == null || id != placesDto.Id)
+                if (placeNumberDto == null || id != placeNumberDto.PlaceNo)
                 {
                     _response.StatusCode = System.Net.HttpStatusCode.BadRequest;
                     return BadRequest(_response);
                 }
 
-                var places = _mapper.Map<Places>(placesDto);
+                if (await _dbPlaces.GetAsync(x => x.Id == placeNumberDto.PlaceId) == null)
+                {
+                    ModelState.AddModelError("CustomError", "PlaceID inválido");
+                    return BadRequest(_response);
+                }
+
+                var placesNumber = _mapper.Map<PlacesNumber>(placeNumberDto);
 
 
-                await _dbPlaces.UpdateAsync(places);
+                await _dbPlacesNumber.UpdateAsync(placesNumber);
 
-                _logger.LogInformation($"Local de id {id} foi atualizado.");
+                _logger.LogInformation($"Local Number de id {id} foi atualizado.");
                 _response.StatusCode = System.Net.HttpStatusCode.NoContent;
                 _response.IsSuccess = true;
                 return Ok(_response);
