@@ -1,0 +1,56 @@
+﻿@model MagicPlaces_WEB.Models.DTO.Interfaces.IPlaceDetails
+
+<div class="row">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="col-1 border-end">
+        <label asp-for="Name" class="control-label pt-2" style="font-size:20px;">Place</label>
+    </div>
+    <div class="col-5 pb-3">
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+</div>
+<div class="row">
+    <div class="col-1 border-end">
+        <label asp-for="Rate" class="control-label pt-2" style="font-size:20px;">Rate</label>
+    </div>
+    <div class="col-2 pb-3">
+        <input asp-for="Rate" class="form-control" />
+        <span asp-validation-for="Rate" class="text-danger"></span>
+    </div>
+    <div class="col-1 border-end">
+        <label asp-for="LastDate" class="control-label pt-2" style="font-size:20px;">Last visit</label>
+    </div>
+    <div class="col-2 pb-3">
+        <input asp-for="LastDate" class="form-control" />
+        <span asp-validation-for="LastDate" class="text-danger"></span>
+    </div>
+</div>
+<div class="row">
+    <div class="col-1 border-end">
+        <label asp-for="Location" class="control-label pt-2" style="font-size:20px;">Where</label>
+    </div>
+    <div class="col-5 pb-3">
+        <input asp-for="Location" class="form-control" />
+        <span asp-validation-for="Location" class="text-danger"></span>
+    </div>
+</div>
+<div class="row">
+    <div class="col-1 border-end">
+        <label asp-for="Details" class="control-label pt-2" style="font-size:20px;">Details</label>
+    </div>
+    <div class="col-5 pb-3">
+        <input asp-for="Details" class="form-control" />
+        <span asp-validation-for="Details" class="text-danger"></span>
+    </div>
+</div>
+<div class="row">
+    <div class="col-1 border-end">
+        <label asp-for="Comment" class="control-label pt-2" style="font-size:20px;">About</label>
+    </div>
+    <div class="col-5 pb-3">
+        <textarea asp-for="Comment" class="form-control"></textarea>
+        <span asp-validation-for="Comment" class="text-danger"></span>
+    </div>
+</div>

@@ -1,12 +1,8 @@
 ﻿using AutoMapper;
-using MagicPlaces_API.Data;
 using MagicPlaces_API.Models;
 using MagicPlaces_API.Models.DTO;
 using MagicPlaces_API.Repository.IRepository;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace MagicPlaces_API.Controllers
 {
@@ -91,7 +87,6 @@ namespace MagicPlaces_API.Controllers
         }
 
         [HttpPost]
-        [Route("AdicionarPlace")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -135,7 +130,7 @@ namespace MagicPlaces_API.Controllers
             return _response;
         }
 
-        [HttpDelete]
+        [HttpDelete("{id:int}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -169,7 +164,7 @@ namespace MagicPlaces_API.Controllers
             return _response;
         }
 
-        [HttpPut]
+        [HttpPut("{id:int}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<APIResponse>> UpdatePlace(int id, [FromBody] PlacesUpdateDTO placesDto)

@@ -1,0 +1,24 @@
+﻿@model MagicPlaces_WEB.Models.DTO.PlacesUpdateDTO
+
+<form asp-action="EditPlace">
+    <br />
+    <div class="container border p-3">
+        <h1 class="text-primary">Edit Place</h1>
+        <hr />
+        <div>
+            @Html.Partial("Shared/PlaceDetails.cshtml", Model)
+        </div>
+        <div class="row">
+            <div class="col-2 offset-2">
+                <a asp-action="Index" asp-controller="Places" class="btn-primary btn form-control">Back </a>
+            </div>
+            <div class="col-2">
+                <input type="submit" value="Edit Place" class="btn btn-success form-control" />
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+<partial name="_ValidationScriptsPartial" />
+}
