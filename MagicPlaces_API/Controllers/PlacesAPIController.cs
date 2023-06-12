@@ -1,12 +1,8 @@
 ﻿using AutoMapper;
-using MagicPlaces_API.Data;
 using MagicPlaces_API.Models;
 using MagicPlaces_API.Models.DTO;
 using MagicPlaces_API.Repository.IRepository;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace MagicPlaces_API.Controllers
 {
@@ -18,6 +14,8 @@ namespace MagicPlaces_API.Controllers
         private readonly IPlacesRepository _dbPlaces;
         private readonly ILogger<PlacesAPIController> _logger;
         private readonly IMapper _mapper;
+        const int ACCEPTABLE_RATE = 8;
+        const int BEST_PLACES_SHOWED = 5;
 
         public PlacesAPIController(ILogger<PlacesAPIController> logger, IPlacesRepository db, IMapper mapper)
         {
@@ -90,8 +88,21 @@ namespace MagicPlaces_API.Controllers
             return _response;
         }
 
+        [HttpGet]
+        [Route("Best")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult<APIResponse>> GetBestPlaces()
+        {
+            var bestPlaces = _dbPlaces.Search(x => x.Rate >= ACCEPTABLE_RATE);
+            if (bestPlaces.Count() >= BEST_PLACES_SHOWED)
+                bestPlaces = bestPlaces.Take(6).OrderByDescending(x => x.Rate);
+
+            _response.Result = _mapper.Map<List<PlacesDTO>>(bestPlaces);
+            _response.StatusCode = System.Net.HttpStatusCode.OK;
+            return Ok(_response);
+        }
+
         [HttpPost]
-        [Route("AdicionarPlace")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -135,7 +146,7 @@ namespace MagicPlaces_API.Controllers
             return _response;
         }
 
-        [HttpDelete]
+        [HttpDelete("{id:int}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -169,7 +180,7 @@ namespace MagicPlaces_API.Controllers
             return _response;
         }
 
-        [HttpPut]
+        [HttpPut("{id:int}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<APIResponse>> UpdatePlace(int id, [FromBody] PlacesUpdateDTO placesDto)

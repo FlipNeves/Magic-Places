@@ -31,21 +31,18 @@ namespace MagicPlaces_API.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
                     b.Property<string>("Comment")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Details")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("LastDate")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Location")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
@@ -64,9 +61,9 @@ namespace MagicPlaces_API.Migrations
                         {
                             Id = 1,
                             Comment = "Você paga pelo local, lindo. Não pela comida.",
-                            CreatedDate = new DateTime(2023, 5, 11, 0, 5, 34, 669, DateTimeKind.Local).AddTicks(7574),
+                            CreatedDate = new DateTime(2023, 5, 30, 20, 11, 44, 48, DateTimeKind.Local).AddTicks(276),
                             Details = "Um restaurante tematizado ao estilo medieval.",
-                            LastDate = new DateTime(2023, 5, 11, 0, 5, 34, 669, DateTimeKind.Local).AddTicks(7582),
+                            LastDate = new DateTime(2023, 5, 30, 20, 11, 44, 48, DateTimeKind.Local).AddTicks(283),
                             Location = "St. Bueno. T2",
                             Name = "Tavernna",
                             Rate = 8.4000000000000004
@@ -75,9 +72,9 @@ namespace MagicPlaces_API.Migrations
                         {
                             Id = 2,
                             Comment = "A comida está mais do que aprovada.",
-                            CreatedDate = new DateTime(2023, 5, 11, 0, 5, 34, 669, DateTimeKind.Local).AddTicks(7584),
+                            CreatedDate = new DateTime(2023, 5, 30, 20, 11, 44, 48, DateTimeKind.Local).AddTicks(285),
                             Details = "Um bom local para uma bebida.",
-                            LastDate = new DateTime(2023, 5, 11, 0, 5, 34, 669, DateTimeKind.Local).AddTicks(7584),
+                            LastDate = new DateTime(2023, 5, 30, 20, 11, 44, 48, DateTimeKind.Local).AddTicks(285),
                             Location = "St. Bela Vista",
                             Name = "OFFICINA",
                             Rate = 8.5
@@ -86,9 +83,9 @@ namespace MagicPlaces_API.Migrations
                         {
                             Id = 3,
                             Comment = "A comida e atendimento são exemplares. Ótimo local.",
-                            CreatedDate = new DateTime(2023, 5, 11, 0, 5, 34, 669, DateTimeKind.Local).AddTicks(7585),
+                            CreatedDate = new DateTime(2023, 5, 30, 20, 11, 44, 48, DateTimeKind.Local).AddTicks(286),
                             Details = "Um restaurante/sanduicheria muito gostosa.",
-                            LastDate = new DateTime(2023, 5, 11, 0, 5, 34, 669, DateTimeKind.Local).AddTicks(7586),
+                            LastDate = new DateTime(2023, 5, 30, 20, 11, 44, 48, DateTimeKind.Local).AddTicks(287),
                             Location = "Próximo ao Flamboyant Shopping",
                             Name = "LIFE BOX",
                             Rate = 9.1999999999999993
@@ -107,7 +104,6 @@ namespace MagicPlaces_API.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("SpecialDetails")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("UpdatedDate")

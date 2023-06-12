@@ -1,0 +1,49 @@
+﻿@model MagicPlaces_WEB.Models.DTO.PlacesCreateDTO
+
+<form asp-action="CreatePlace">
+    <br />
+    <div class="card shadow mb-6 border-bottom-success">
+        <div class="card-header py-3">
+            <h5 class="m-0 font-weight-bold text-success">Create Place</h5>
+        </div>
+        <div class="card-body">
+            <div>
+            @Html.Partial("Shared/PlaceDetails.cshtml", Model)
+        </div>
+            <div class="row">
+                <div class="col-2 offset-0">
+                    <button type="button" asp-action="Index" asp-controller="Places" class="btn btn-primary btn-icon-split" id="backBtn">
+                        <span class="icon text-white-50">
+                            <i class="bi bi-arrow-left"></i>
+                        </span>
+                        <span class="text">Back</span>
+                    </button>
+                </div>
+                <div class="col-3 offset-2">
+                    <button type="button" class="btn btn-success btn-icon-split" id="submitBtn">
+                        <span class="icon text-white-50">
+                            <i class="bi bi-check-lg"></i>
+                        </span>
+                        <span class="text">Create Place</span>
+                    </button>
+                </div>
+                <div class="col-2"></div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+<script>
+    document.getElementById("submitBtn").addEventListener("click", function() {
+        document.getElementById("editForm").submit();
+    });
+
+    document.getElementById("backBtn").addEventListener("click", function() {
+        window.location.href = this.getAttribute("formaction");
+    });
+
+</script>
+}
