@@ -3,6 +3,8 @@ using MagicPlaces_WEB.Models;
 using MagicPlaces_WEB.Services.IServices;
 using Newtonsoft.Json;
 using System.Text;
+using static MagicPlaces_Utility.SD;
+using static MagicPlaces_WEB.Models.APIRequest;
 
 namespace MagicPlaces_WEB.Services
 {
@@ -14,6 +16,20 @@ namespace MagicPlaces_WEB.Services
         {
             this.responseModel = new();
             this.httpClient = httpClient;
+        }
+
+        public async Task<T> ConsumeAPI<T>(ApiType method, string url, object data, APIToken token = null, APIParams headers = null)
+        {
+            var request = new APIRequest()
+            {
+                ApiType = method,
+                Data = data,
+                Url = url,
+                Token = token,
+                Headers = headers
+            };
+
+            return await SendAsync<T>(request);
         }
 
         public async Task<T> SendAsync<T>(APIRequest request)

@@ -9,5 +9,7 @@ namespace MagicPlaces_API.Repository.IRepository
         Task<List<T>> GetAllAsync(Expression<Func<T, bool>>? filter = null);
         Task<T> GetAsync(Expression<Func<T, bool>> filter = null, bool tracked = true);
         Task SaveAsync();
+        IEnumerable<T> Search(Expression<Func<T, bool>> predicate, bool asNoTracking = true);
+        
     }
 }

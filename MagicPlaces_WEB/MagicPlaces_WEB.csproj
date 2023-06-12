@@ -15,4 +15,9 @@
     <ProjectReference Include="..\MagicPlaces_Utility\MagicPlaces_Utility.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\images\" />
+    <Folder Include="wwwroot\webfonts\" />
+  </ItemGroup>
+
 </Project>

@@ -14,6 +14,8 @@ namespace MagicPlaces_API.Controllers
         private readonly IPlacesRepository _dbPlaces;
         private readonly ILogger<PlacesAPIController> _logger;
         private readonly IMapper _mapper;
+        const int ACCEPTABLE_RATE = 8;
+        const int BEST_PLACES_SHOWED = 5;
 
         public PlacesAPIController(ILogger<PlacesAPIController> logger, IPlacesRepository db, IMapper mapper)
         {
@@ -84,6 +86,20 @@ namespace MagicPlaces_API.Controllers
 
             }
             return _response;
+        }
+
+        [HttpGet]
+        [Route("Best")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult<APIResponse>> GetBestPlaces()
+        {
+            var bestPlaces = _dbPlaces.Search(x => x.Rate >= ACCEPTABLE_RATE);
+            if (bestPlaces.Count() >= BEST_PLACES_SHOWED)
+                bestPlaces = bestPlaces.Take(6).OrderByDescending(x => x.Rate);
+
+            _response.Result = _mapper.Map<List<PlacesDTO>>(bestPlaces);
+            _response.StatusCode = System.Net.HttpStatusCode.OK;
+            return Ok(_response);
         }
 
         [HttpPost]

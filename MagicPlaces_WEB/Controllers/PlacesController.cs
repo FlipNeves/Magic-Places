@@ -31,10 +31,12 @@ namespace MagicPlaces_WEB.Controllers
             return View(listPlaces);
         }
 
+        [HttpDelete]
         public async Task<IActionResult> DeletePlace(int id)
         {
             var response = await _placesService.DeleteAsync<APIResponse>(id);
 
+            TempData["success"] = "Place was deleted!";
             return RedirectToAction(nameof(Index));
         }
 
@@ -59,7 +61,16 @@ namespace MagicPlaces_WEB.Controllers
                 var response = await _placesService.UpdateAsync<APIResponse>(place);
                 if (response.IsValid())
                 {
+                    TempData["success"] = "Place was edited successfully!";
                     return RedirectToAction(nameof(Index));
+                }
+                else
+                {
+                    if(response.ErrorMessages.Count > 0)
+                    {
+                        TempData["error"] = "Place was not edited!";
+                        ModelState.AddModelError("ErrorMessages", response.ErrorMessages.FirstOrDefault());
+                    }
                 }
             }
 
@@ -80,7 +91,16 @@ namespace MagicPlaces_WEB.Controllers
                 var response = await _placesService.CreateAsync<APIResponse>(place);
                 if(response.IsValid())
                 {
+                    TempData["success"] = "Place was created successfully!";
                     return RedirectToAction(nameof(Index));
+                }
+                else
+                {
+                    if (response.ErrorMessages.Count > 0)
+                    {
+                        TempData["error"] = "Place was not created!";
+                        ModelState.AddModelError("ErrorMessages", response.ErrorMessages.FirstOrDefault());
+                    }
                 }
             }
 

@@ -1,4 +1,6 @@
 ﻿using MagicPlaces_WEB.Models;
+using static MagicPlaces_Utility.SD;
+using static MagicPlaces_WEB.Models.APIRequest;
 
 namespace MagicPlaces_WEB.Services.IServices
 {
@@ -6,5 +8,6 @@ namespace MagicPlaces_WEB.Services.IServices
     {
         APIResponse responseModel { get; set; }
         Task<T> SendAsync<T>(APIRequest apiRequest);
+        Task<T> ConsumeAPI<T>(ApiType method, string url, object data, APIToken token = null, APIParams headers = null);
     }
 }

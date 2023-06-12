@@ -17,6 +17,13 @@ namespace MagicPlaces_WEB.Services
             _servicesUrls = servicesUrls.Value;
         }
 
+        public Task<T> GetMostPositivePlaces<T>()
+        {
+            return ConsumeAPI<T>(SD.ApiType.GET, $"{_servicesUrls.PlacesAPI}/Places/Best", null);
+        }
+
+
+
         public Task<T> CreateAsync<T>(PlacesCreateDTO dtoPlaces)
         {
             return SendAsync<T>(new APIRequest()
